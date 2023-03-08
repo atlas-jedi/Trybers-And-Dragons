@@ -7,7 +7,7 @@ import getRandomInt from './utils';
 export default class Character implements Fighter {
   private readonly _race: Race;
   private readonly _archetype: Archetype;
-  private maxLifePoints: number;
+  private _maxLifePoints: number;
   private _lifePoints: number;
   private _strength: number;
   private _defense: number;
@@ -18,8 +18,8 @@ export default class Character implements Fighter {
     this._dexterity = getRandomInt(1, 10);
     this._race = new Elf(name, this._dexterity);
     this._archetype = new Mage(name);
-    this.maxLifePoints = this.race.maxLifePoints / 2;
-    this._lifePoints = this.maxLifePoints;
+    this._maxLifePoints = this._race.maxLifePoints / 2;
+    this._lifePoints = this._maxLifePoints;
     this._strength = getRandomInt(1, 10);
     this._defense = getRandomInt(1, 10);
     this._energy = {
@@ -41,7 +41,7 @@ export default class Character implements Fighter {
 
     if (damage > 0) {
       this._lifePoints -= damage;
-    } else if (damage <= 0) {
+    } else {
       this._lifePoints -= 1;
     }
 
@@ -55,17 +55,22 @@ export default class Character implements Fighter {
   }
 
   public levelUp(): void {
-    const rMaxLife = this._race.maxLifePoints;
-    this.maxLifePoints += getRandomInt(1, 10);
-    if (this.maxLifePoints > rMaxLife) this.maxLifePoints = rMaxLife;
     this._strength += getRandomInt(1, 10);
     this._dexterity += getRandomInt(1, 10);
     this._defense += getRandomInt(1, 10);
     this._energy.amount = 10;
-    this._lifePoints = this.maxLifePoints;
+    const rMaxLife = this._maxLifePoints + getRandomInt(1, 10);
+
+    if (rMaxLife > this._race.maxLifePoints) {
+      this._maxLifePoints = this._race.maxLifePoints;
+    } else {
+      this._maxLifePoints = rMaxLife;
+    }
+
+    this._lifePoints = this._maxLifePoints;
   }
 
-  public special(enemy: Fighter) {
+  public special(enemy: Fighter | SimpleFighter) {
     const specialDamage = this.energy.amount + this.dexterity + this.strength;
     this._energy.amount = 0;
     enemy.receiveDamage(specialDamage);
